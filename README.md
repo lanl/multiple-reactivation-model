@@ -1,5 +1,7 @@
 # Multiple-reactivation model
 
+** /!\ repository is under construction /!\ **
+
 This repository contains jupyter notebooks, Stan models and data used in the paper
 
 > [van Dorp *et al.*](https://insert.doi.here), Models of SIV rebound after treatment interruption that involve multiple reactivation events, submitted (2020)
