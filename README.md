@@ -1,6 +1,6 @@
 # Multiple-reactivation model
 
-** /!\ repository is under construction /!\ **
+### /!\ repository is under construction /!\
 
 This repository contains jupyter notebooks, Stan models and data used in the paper
 
@@ -30,12 +30,24 @@ but *should* also work on Mac OSX and Windows 10.
 
 ## Data
 
+The `data` folder contains the timeseries used in the analysis. The data has been described 
+by Whitney *et al.* in two publications 
+
+> [Whitney *et al.*](https://doi.org/10.1038/nature13594) Rapid seeding of the viral reservoir prior to SIV viraemia in rhesus monkeys. Nature, 512(7512):74-77, Aug 2014.
+
+> [Whitney *et al.*](https://doi.org/10.1038/s41467-018-07881-9) Prevention of SIVmac251 reservoir seeding in rhesus monkeys by early antiretroviral therapy. Nat. Commun., 9(1):5429, 12 2018.
+
+The data is separated into two csv files, containing rebound timeseries and acute infection timeseries respectively.
+
+- `rebound-data-long.csv` Viral load measurements after treatment interruption
+- `acute-data-long.csv` Viral load measurements during acute infection
 
 ## Notebooks
 
 The following jupyter notebooks can be found in the `notebooks` folder:
 
-- `VLProcessSimulations.ipynb` Simulate trajectories and first passage times of the viral load process. These are used to make **Figure 1 and 2** of the paper.
+- `VLProcessSimulations.ipynb` Simulate trajectories and first passage times of the viral load process. These are used to make **Figure 1 and 2** of the paper and **Figure S3, S4, S5 and S6** of the Supplementary Information.
+- `ParseData.ipynb` This notebook is used to load the viral load data into a python dictionary. This dictionary is "pickled" into a file that can be loaded into the other notebooks for further analysis.
 - ...
 - `ReboundTimeVarianceAnalysis.ipynb` What percentage of the variance of the rebound time is due to the first recrudescence event, and when do other reactivations become important. This notebook is used to make **Figure 4**.
 - ...
@@ -46,7 +58,9 @@ For more information on the Stan programming language,
 see the [Stan website](https://mc-stan.org/).
 In the folder `stan-models` the following files can be found
 
-- ...
+- `logistic-rebound-model-multiple-reactiv-II.stan` is the main model, implementing the stochastic multiple-reactivation model in Stan. 
+- `logistic-rebound-model-single-reactiv.stan` This is the simple single-reactivation model.
+- `logistic-rebound-model-multiple-reactiv-CD.stan` This is [Pinkecych's approximation](https://dx.doi.org/10.1371%2Fjournal.ppat.1005740) of the multiple-reactivation model implemented in Stan.
 
 ## Python module
 
@@ -61,7 +75,7 @@ sys.path.append("..") ## or the location of the mrmpytools module
 
 Then import elements from this module. For instance 
 
-```
+```py
 import mrmpytools.utilities as util
 x1, x2 = util.unzip([('a', 1), ('b', 2)]) ## should be ['a', 'b'], [1, 2]
 ```
