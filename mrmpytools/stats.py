@@ -36,6 +36,7 @@ def fpt_pdf(t, ell, lam, v0, g, V0):
     """
     Probability density function of the diffusion approximation
     of the rebound time distribution.
+    This PDF allows us to set an initial condition (V0)
     """
     Z = sts.norm.cdf(np.sqrt(2*lam/g) + V0/v0 * np.sqrt(2*g/lam))
     x = np.exp(g*t)
@@ -132,7 +133,8 @@ def Z(lam, g):
 
 def FPTpdf(t, ell, v0, lam, g):
     """
-    PDF of first passage time distribution of the limit of detection
+    PDF of first passage time distribution of the limit of detection.
+    This function is identical to `ftp_pdf` with V0 = 0.
     """
     sig = sigmaV(t, v0, lam, g)
     mu = muV(t, v0, lam, g)
