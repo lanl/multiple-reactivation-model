@@ -48,7 +48,7 @@ The following jupyter notebooks can be found in the `notebooks` folder:
 
 - `VLProcessSimulations.ipynb` Simulate trajectories and first passage times of the viral load process. These are used to make **Figure 1 and 2** of the paper and **Figure S3, S4, S5 and S6** of the Supplementary Information.
 - `ParseData.ipynb` This notebook is used to load the viral load data into a python dictionary. This dictionary is "pickled" into a file that can be loaded into the other notebooks for further analysis.
-- ...
+- `FitStanModels.ipynb` In this notebook, we fit the Stan models to the VL time series. We then make **Figure 3** of the paper and Supplementary **Figure S1 and S2**.
 - `ReboundTimeVarianceAnalysis.ipynb` What percentage of the variance of the rebound time is due to the first recrudescence event, and when do other reactivations become important. This notebook is used to make **Figure 4**.
 - ...
 
@@ -60,7 +60,7 @@ In the folder `stan-models` the following files can be found
 
 - `logistic-rebound-model-multiple-reactiv-II.stan` is the main model, implementing the stochastic multiple-reactivation model in Stan. 
 - `logistic-rebound-model-single-reactiv.stan` This is the simple single-reactivation model.
-- `logistic-rebound-model-multiple-reactiv-CD.stan` This is [Pinkecych's approximation](https://dx.doi.org/10.1371%2Fjournal.ppat.1005740) of the multiple-reactivation model implemented in Stan.
+- `logistic-rebound-model-multiple-reactiv-CD.stan` This is [Pinkevych's approximation](https://dx.doi.org/10.1371%2Fjournal.ppat.1005740) of the multiple-reactivation model implemented in Stan.
 
 ## Python module
 
