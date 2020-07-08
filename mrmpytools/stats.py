@@ -182,6 +182,21 @@ def gammaFPTpdf(t, ell, v0, lam, g):
     return -derivative(gammaFPTccdf, t, args=(ell, v0, lam, g), dx=1e-3)
 
 
+## get an initial guess of the rebound time
+
+def approx_rebound_time(lam, g, v0, ell):
+    """
+    Use E[V_t] to get a guess of the rebound time.
+    """
+    return 1/g * np/log(ell * g / (v0 * lam) + 1)
+
+def approx_rel_rebound_time(lam, g, v0, ell):
+    """
+    Use E[V_t] to get a guess of the rebound time, 
+    with initial condition V_0 = v0.
+    """
+    return 1/g * np.log((ell/v0 * g + lam) / (g + lam))
+
 
 ## functions for the generalized MRM with variable growth rates
 
@@ -195,6 +210,7 @@ def solve_u(sigma, g):
     Args:
         sigma: the target standard deviation of G
         g: the maximum growth rate
+        
     Returns:
         u: the with of the support of G
     """
@@ -215,6 +231,7 @@ def gen_ggen_trunc_propto(sigma, g):
     Args:
         sigma: the standard deviation
         g: the maximum growth rate
+        
     Returns:
         a random number generator for G with maximum g 
         and standard deviation sigma

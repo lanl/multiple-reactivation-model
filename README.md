@@ -51,7 +51,7 @@ The following jupyter notebooks can be found in the `notebooks` folder:
 - `FitStanModels.ipynb` In this notebook, we fit the Stan models to the VL time series. We then make **Figure 3** of the paper and Supplementary **Figure S1 and S2**.
 - `FitAcuteStanModel.ipynb` In this notebook, we fit a Stan models to the acute VL time series.
 - `ReboundTimeVarianceAnalysis.ipynb` What percentage of the variance of the rebound time is due to the first recrudescence event, and when do other reactivations become important. This notebook is used to make **Figure 4**.
-- ...
+- `SensitivityAnalyses.ipynb` How sensitive is the model to misspecification? Look at the effect of a misspecified initial viral load and intra-host variation of the exponential growth rate. Create **Figure 5**.
 
 ## Stan models
 
@@ -63,7 +63,7 @@ In the folder `stan-models` the following files can be found
 - `logistic-rebound-model-single-reactiv.stan` This is the simple single-reactivation model.
 - `logistic-rebound-model-multiple-reactiv-CD.stan` This is [Pinkevych's approximation](https://dx.doi.org/10.1371%2Fjournal.ppat.1005740) of the multiple-reactivation model implemented in Stan.
 - `logistic-acute-model.stan` Simple logistic growth model to fit the acute infection data and estimate growth rates.
-- ...
+- `expon-rebound-model-multiple-reactiv-II-Gsp.stan` Simplified model with exponential growth instead of logistic growth and no random effects.
 
 ## Python module
 
@@ -85,9 +85,13 @@ x1, x2 = util.unzip([('a', 1), ('b', 2)]) ## should be ['a', 'b'], [1, 2]
 
 The folder `mrmpytools` contains the following files
 
-- `plots.py` Some plotting functions
+- `plots.py` Some plotting functions.
 - `pystantools.py` Some functions for compiling and analyzing Stan models.
-- ...
+- `stats.py`Implements the rebound time distribution and many other functions.
+- `wkb.py` Functions used for the WKB approximation
+- `simulations.py` Simulates the viral load process.
+- `definitions.py` Define constants used throughout the project.
+- `utilities.py` Some auxiliary functions used throughout the project.
 
 _______________________________________________________________
 
