@@ -1,12 +1,20 @@
-/* Version of the multiple-reactivation model with 
- * similar parameterization as the single-reactivation model
- * for the logistic growth model.
+/* The multiple-reactivation model with the first recrudescence time
+ * as a latent variable.
+ * The time of treatment initiation is added as a covariate
+ * for the recrudescence rate lambda and the growth rate r (a.k.a. g).
  * 
  * Abbreviations:
  * Cndl: conditional
+ * Fst: first
+ * FPT: first passage time
+ * Pts: points
  */
 
 
+/* In the functions block, we can define some custom funtions and distribution.
+ * In our case, we define the rebound-time distribution f(t;...) (called fpt below)
+ * and some other auxiliary functions
+ */
 functions {
     /* A "potentially censored" normal distribution.
      * Typically used for virus load measurements 
@@ -29,6 +37,12 @@ functions {
         }
         return lp;
     }
+    /* Compute the log of the logistic growth curve at time points ts,
+     * given parameters r, logK, logTheta, log1mTheta and tm.
+     * Here theta = ell / K, and V(tm) = ell, and 
+     * log1mTheta = log(1 - theta).
+     * We use the log_sum_exp function for numeric stability.
+     */
     vector log_logistic_model(vector ts, real r, real logK, 
             real logTheta, real log1mTheta, real tm) {
         vector[num_elements(ts)] xs;
@@ -37,6 +51,10 @@ functions {
         }
         return xs;
     }
+    /* A simple function to create a sequence of n equally 
+     * spaced numbers between xmin and xmax (inclusive).
+     * This is used in the generated quantities block for simulations.
+     */
     vector seq(real xmin, real xmax, int n) { // n should be > 2
         real mesh; // Delta x
         if ( xmin >= xmax || n < 2 ) {
@@ -45,28 +63,41 @@ functions {
         mesh = (xmax - xmin)/(n-1);
         return xmin - mesh + cumulative_sum(rep_vector(mesh, n));
     }
-    // functions to compute the approximate first-passage time distribution
+    // First cumulant of V_t
     real kappa1(real t, real lambda, real v0, real g) {
         return lambda * v0 / g * (exp(g*t) - 1);
     }
+    // derivative of kappa_1
     real dkappa1(real t, real lambda, real v0, real g) {
         return lambda * v0 * exp(g*t);
     }
+    // second cumulant of V_t
     real kappa2(real t, real lambda, real v0, real g) {
         return lambda * v0*v0 / (2*g) * (exp(2*g*t) - 1);
     }
+    // derivative of kappa_2
     real dkappa2(real t, real lambda, real v0, real g) {
         return lambda * v0*v0 * exp(2*g*t);
     }
+    // standard deviation of sd(V_t) = sqrt(kappa_2)
     real sqrtkappa2(real t, real lambda, real v0, real g) {
         return v0 * sqrt(lambda / (2*g) * (exp(2*g*t) - 1));
     }
+    // derivative of sd(V_t)
     real dsqrtkappa2(real t, real lambda, real v0, real g) {
         return 0.5 * dkappa2(t, lambda, v0, g) / sqrtkappa2(t, lambda, v0, g);
     }
+    /* auxiliary function z for normalizing constant Z
+     * Z = phi(z) where z = sqrt(2*lambda/g) + V0/v0 * sqrt(2*g/lambda).
+     * Also used for RNG below.
+     */
     real fpt_trunc_const(real lambda, real v0, real g, real V0) {
         return sqrt(2*lambda/g) + V0/v0 * sqrt(2*g/lambda);
     }
+    /* log-PDF for the FPT distribution of V_t.
+     * This allows us to write a sampling statement as 
+     *     tau ~ fpt(ell, lambda, v0, g, 0);
+     */
     real fpt_lpdf(real t, real ell, real lambda, real v0, real g, real V0) {
         // probability of reaching the threshold
         real logZ = normal_lcdf(fpt_trunc_const(lambda, v0, g, V0) | 0, 1); 
@@ -79,20 +110,30 @@ functions {
         // conditioned on reaching the threshold
         return normal_lpdf(y | 0, 1) + log(-dydt) - logZ; 
     }
+    /* For completeness, we also define the (log) survival function
+     * (complementary CDF) for the FPT distribution
+     */
     real fpt_lccdf(real t, real ell, real lambda, real v0, real g, real V0) {
-        real logZ = normal_lcdf(sqrt(2*lambda/g) + V0/v0 * sqrt(2*g/lambda) | 0, 1);
+        real logZ = normal_lcdf(fpt_trunc_const(lambda, v0, g, V0) | 0, 1);
         real kap1 = kappa1(t, lambda, v0, g);
         real sqkap2 = sqrtkappa2(t, lambda, v0, g);
         real y = (ell - (kap1 + V0*exp(g*t))) / sqkap2;
         return log_diff_exp(normal_lcdf(y | 0, 1), log1m_exp(logZ)) - logZ;
     }
+    /* And we define the (log) cumulative distribution function
+     */
     real fpt_lcdf(real t, real ell, real lambda, real v0, real g, real V0) {
-        real logZ = normal_lcdf(sqrt(2*lambda/g) + V0/v0 * sqrt(2*g/lambda) | 0, 1);
+        real logZ = normal_lcdf(fpt_trunc_const(lambda, v0, g, V0) | 0, 1);
         real kap1 = kappa1(t, lambda, v0, g);
         real sqkap2 = sqrtkappa2(t, lambda, v0, g);
         real y = (ell - (kap1 + V0*exp(g*t))) / sqkap2;
         return normal_lccdf(y | 0, 1) - logZ;
     }
+    /* Auxiliary random number generator (RNG) that draws from a 
+     * truncated normal distribution. Used for the RNG of the
+     * FPT below.
+     * This uses a simple rejection scheme.
+     */
     real truncnorm_rng(real a, real b, real mu, real sigma) {
         // rejection sampler
         int n = 0;
@@ -106,6 +147,10 @@ functions {
         }
         return x;
     }
+    /* RNG for the first passage time distribution of V_t.
+     * Used in the generated quantities block to simulate 
+     * rebound times.
+     */
     real fpt_rng(real ell, real lambda, real v0, real g, real V0) {
         real t;
         if ( V0 >= ell ) {
@@ -134,20 +179,21 @@ functions {
 data {
     // Data
     int<lower=0> NumSubjects;
-    int<lower=0> NumTimePts[NumSubjects];
-    vector[max(NumTimePts)] TimePts[NumSubjects];
-    int<lower=0> NumSimTimePts;
-    vector[max(NumTimePts)] VirusLoad[NumSubjects];
-    int CensorCode[NumSubjects, max(NumTimePts)];
-    real<lower=0> StartART[NumSubjects]; // used as covariate for growth rate
-    real<lower=0> DetectionLimit; // required for computing reboundTime
-    real PriorMeanLogK;
-    real<lower=0> PriorSdLogK;
-    real PriorMeanLogR;
-    real<lower=0> PriorSdLogR;
+    int<lower=0> NumTimePts[NumSubjects]; // number of VL observations per subject
+    vector[max(NumTimePts)] TimePts[NumSubjects]; // observation times for each subject
+    int<lower=0> NumSimTimePts; // used in generated quantities for simulation of VL
+    vector[max(NumTimePts)] VirusLoad[NumSubjects]; // VL observations
+    int CensorCode[NumSubjects, max(NumTimePts)]; // VL censoring
+    real<lower=0> StartART[NumSubjects]; // used as covariate for growth rate and lambda
+    real<lower=0> DetectionLimit; // the LoD of the VL, required for computing reboundTime
+    // hyper parameters for priors
+    real PriorMeanLogK; // hyper-parameter for carying capacity K
+    real<lower=0> PriorSdLogK; // hyper-parameter for carying capacity K
+    real PriorMeanLogR; // hyper-parameter for growth rate r
+    real<lower=0> PriorSdLogR; // hyper-parameter for growth rate r
     real<lower=0> PriorMeanAlphaLogR;
     real<lower=0> PriorSdAlphaLogR;
-    real<lower=0> MaxR;
+    real<lower=0> MaxR; // set an upper bound for the growth rate to avoid numerical issues
     real<lower=0> PriorMeanSigma;
     real<lower=0> PriorSdSigma;
     // priors for the reactivation model

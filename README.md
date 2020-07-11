@@ -12,7 +12,7 @@ To use the code, simply clone the repository
 $ git clone https://github.com/lanl/multiple-reactivation-model.git
 ```
 
-The model is described in full detail in the paper. In short, we present an refinement of a model developed by Pinkevych *et al.* and Hill *et al.* for SIV and HIV rebound after treatment interruption, that takes the effect of multiple reativation events into account. We derive a parameteric probability density function for the time to viral rebound, and implement this in the Stan programming language. We fit the model to data from SIV infected and very early treated macaques, published by Whitney *et al.* (2014), and (2018).
+The model is described in full detail in the paper. In short, we present a refinement of a model developed by Pinkevych *et al.* and Hill *et al.* for SIV and HIV rebound after treatment interruption, that takes the effect of multiple reativation events into account. We derive a parameteric probability density function for the time to viral rebound, and implement this in the Stan programming language. We fit the model to data from SIV infected and very early treated macaques, published by Whitney *et al.* (2014), and (2018).
 
 ## Requirements
 
