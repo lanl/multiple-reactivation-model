@@ -5,9 +5,14 @@
  * 
  * Abbreviations:
  * Cndl: conditional
+ * Fst: first
+ * FPT: first passage time
+ * Pts: points
  */
 
 
+/* Define some auxiliary functions and distributions
+ */
 functions {
     /* A "potentially censored" normal distribution.
      * Typically used for virus load measurements 
@@ -30,6 +35,12 @@ functions {
         }
         return lp;
     }
+    /* Compute the log of the logistic growth curve at time points ts,
+     * given parameters r, logK, logTheta, log1mTheta and tm.
+     * Here theta = ell / K, and V(tm) = ell, and 
+     * log1mTheta = log(1 - theta).
+     * We use the log_sum_exp function for numeric stability.
+     */
     vector log_logistic_model(vector ts, real r, real logK, 
             real logTheta, real log1mTheta, real tm) {
         vector[num_elements(ts)] xs;
@@ -38,6 +49,10 @@ functions {
         }
         return xs;
     }
+    /* A simple function to create a sequence of n equally 
+     * spaced numbers between xmin and xmax (inclusive).
+     * This is used in the generated quantities block for simulations.
+     */
     vector seq(real xmin, real xmax, int n) { // n should be > 2
         real mesh; // Delta x
         if ( xmin >= xmax || n < 2 ) {
@@ -49,7 +64,6 @@ functions {
 }
 
 data {
-    // Data
     int<lower=0> NumSubjects;
     int<lower=0> NumTimePts[NumSubjects];
     vector[max(NumTimePts)] TimePts[NumSubjects];
@@ -79,23 +93,16 @@ data {
     real DrugDelay;
 }
 
+/* In the transformed data block, we can pre-compute some 
+ * functions of the data that are used in the model
+ */
 transformed data {
-    // Transformed Data
-    vector[NumSubjects] MeanTimePts;
     vector[max(NumTimePts)] LogVirusLoad[NumSubjects];
     real LogDetectionLimit = log(DetectionLimit);
     vector[NumSubjects] StartARTStd; // standardized StartART
     real LogMaxR = log(MaxR);
     
     for ( n in 1:NumSubjects ) {
-        real x = 0.0; int k = 0;
-        // only use uncensored observations
-        for ( j in 1:NumTimePts[n] ) {
-            if ( CensorCode[n, j] == 0 ) {
-                x += TimePts[n][j]; k += 1;
-            }
-        }
-        MeanTimePts[n] = x / k;
         LogVirusLoad[n][1:NumTimePts[n]] = log(VirusLoad[n][1:NumTimePts[n]]);
     }
     

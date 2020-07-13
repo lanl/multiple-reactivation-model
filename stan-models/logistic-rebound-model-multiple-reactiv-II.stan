@@ -177,7 +177,6 @@ functions {
 }
 
 data {
-    // Data
     int<lower=0> NumSubjects;
     int<lower=0> NumTimePts[NumSubjects]; // number of VL observations per subject
     vector[max(NumTimePts)] TimePts[NumSubjects]; // observation times for each subject
@@ -191,40 +190,33 @@ data {
     real<lower=0> PriorSdLogK; // hyper-parameter for carying capacity K
     real PriorMeanLogR; // hyper-parameter for growth rate r
     real<lower=0> PriorSdLogR; // hyper-parameter for growth rate r
-    real<lower=0> PriorMeanAlphaLogR;
-    real<lower=0> PriorSdAlphaLogR;
+    real<lower=0> PriorMeanAlphaLogR; // hyper-parameter for effect of ART init on growth rate
+    real<lower=0> PriorSdAlphaLogR; // hyper-parameter for effect of ART init on growth rate
     real<lower=0> MaxR; // set an upper bound for the growth rate to avoid numerical issues
-    real<lower=0> PriorMeanSigma;
-    real<lower=0> PriorSdSigma;
+    real<lower=0> PriorMeanSigma; // hyper-parameter for VL measurement error
+    real<lower=0> PriorSdSigma; // hyper-parameter for VL measurement error
     // priors for the reactivation model
-    real PriorMeanLogLambda;
-    real<lower=0> PriorSdLogLambda;
-    real PriorMeanLogVZero;
-    real<lower=0> PriorSdLogVZero;
-    real MaxLogVZero;
-    real PriorMeanAlphaLogLambda;
-    real<lower=0> PriorSdAlphaLogLambda;
+    real PriorMeanLogLambda; // hyper-parameter for recrudescence rate lambda 
+    real<lower=0> PriorSdLogLambda;  // hyper-parameter for recrudescence rate lambda
+    real PriorMeanLogVZero;  // hyper-parameter for initial VL v0
+    real<lower=0> PriorSdLogVZero;  // hyper-parameter for initial VL v0
+    real MaxLogVZero; // set an upper bound for v0 to avoid numerical issues
+    real PriorMeanAlphaLogLambda; // hyper-parameter for effect of ART init on recrudescence rate
+    real<lower=0> PriorSdAlphaLogLambda; // hyper-parameter for effect of ART init on recrudescence rate
     // drug washout delay
     real DrugDelay;
 }
 
+/* In the transformed data block, we can pre-compute some 
+ * functions of the data that are used in the model
+ */
 transformed data {
-    // Transformed Data
-    vector[NumSubjects] MeanTimePts;
     vector[max(NumTimePts)] LogVirusLoad[NumSubjects];
     real LogDetectionLimit = log(DetectionLimit);
     vector[NumSubjects] StartARTStd; // standardized StartART
     real LogMaxR = log(MaxR);
         
     for ( n in 1:NumSubjects ) {
-        real x = 0.0; int k = 0;
-        // only use uncensored observations
-        for ( j in 1:NumTimePts[n] ) {
-            if ( CensorCode[n, j] == 0 ) {
-                x += TimePts[n][j]; k += 1;
-            }
-        }
-        MeanTimePts[n] = x / k;
         LogVirusLoad[n][1:NumTimePts[n]] = log(VirusLoad[n][1:NumTimePts[n]]);
     }
     
@@ -277,6 +269,11 @@ transformed parameters {
     }
 }
 
+/* The model block defines the prior density and the likelihood function.
+ * Our observations consist of VL measurements.
+ * The FPT distribution enters the model as a prior on the (relative)
+ * rebound time.
+ */
 model {
     for ( n in 1:NumSubjects ) {
         logr[n] ~ normal(mu_logr, sigma_logr) T[,LogMaxR];
@@ -323,6 +320,12 @@ model {
     }
 }
 
+/* The generated quantities block can be used for prediction and simulation
+ * We compute the predicted VL and simulate VL observations in order to
+ * make figures of the model fit.
+ * We also sample from the FPT distribution, and we compute the likelihood of
+ * the VL measurements so that we can compute WAIC
+ */
 generated quantities {
     vector[NumSimTimePts] logVLhat[NumSubjects];
     vector[NumSimTimePts] logVLsim[NumSubjects];

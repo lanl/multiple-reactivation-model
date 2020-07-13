@@ -38,7 +38,9 @@ functions {
         }
         return xs;
     }
-    // Time between t1 and tau, under the conditionally deterministic Pinkevych model
+    /* Time between t1 and tau, under the 
+     * conditionally deterministic Pinkevych model
+     */
     real pinkevych_connection(real r, real log_v0, real lambda, real log_ell) {
         // let p = exp(-r/lambda)
         real log_p = -r/lambda;
@@ -57,7 +59,6 @@ functions {
 }
 
 data {
-    // Data
     int<lower=0> NumSubjects;
     int<lower=0> NumTimePts[NumSubjects];
     vector[max(NumTimePts)] TimePts[NumSubjects];
@@ -88,22 +89,12 @@ data {
 }
 
 transformed data {
-    // Transformed Data
-    vector[NumSubjects] MeanTimePts;
     vector[max(NumTimePts)] LogVirusLoad[NumSubjects];
     real LogDetectionLimit = log(DetectionLimit);
     vector[NumSubjects] StartARTStd; // standardized StartART
     real LogMaxR = log(MaxR);
         
     for ( n in 1:NumSubjects ) {
-        real x = 0.0; int k = 0;
-        // only use uncensored observations
-        for ( j in 1:NumTimePts[n] ) {
-            if ( CensorCode[n, j] == 0 ) {
-                x += TimePts[n][j]; k += 1;
-            }
-        }
-        MeanTimePts[n] = x / k;
         LogVirusLoad[n][1:NumTimePts[n]] = log(VirusLoad[n][1:NumTimePts[n]]);
     }
     
