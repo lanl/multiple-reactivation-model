@@ -9,6 +9,22 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import string ## used for panel labeling (A, B, C, ...)
 
+def sci_fmt(val):
+    """
+    Format a value in scientific notation.
+    Intendend for manually formatting the tick labels
+    on axes of plots.
+    
+    Examples: 
+        0.2 -> $2 \cdot 10^{-1}$
+        300 -> $3 \cdot 10^{2}$
+    """
+    exp = np.floor(np.log10(val))
+    mul = np.floor(val / 10**exp)
+    sci_str = f"${mul:0.0f} \\cdot 10^{{{exp:0.0f}}}$"
+    return sci_str
+
+
 def ordinate_transform(ax, z, which='x'):
     """in order to get coordinates in a subplot,
     one can use transforms. This function does transforms
@@ -107,4 +123,3 @@ def simple_boxplot(ax, pos, data, color='k', color_med='red', p=50, horizontal=F
         ax.scatter(pos, medians, marker='_', color=color_med, s=s, **kwargs)
         for p, d, u in zip(pos, downers, uppers):
             ax.plot([p, p], [d, u], color=color, **kwargs)
-
