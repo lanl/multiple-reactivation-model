@@ -12,7 +12,12 @@ $ git clone https://github.com/lanl/multiple-reactivation-model.git
 
 The model is described in full detail in the paper. In short, we present a refinement of a model developed by Pinkevych *et al.* and Hill *et al.* for SIV and HIV rebound after treatment interruption, that takes the effect of multiple reativation events into account. We derive a parameteric probability density function for the time to viral rebound, and implement this in the Stan programming language. We fit the model to data from SIV infected and very early treated macaques, published by Whitney *et al.* (2014), and (2018).
 
-## Requirements
+This repository contains scripts to fit a number of HIV and SIV viral rebound models to viral load data from treatment interruption experiments and acute infections. The scripts generate parameter estimates of the viral growth rate after rebound and the recrudescence rate after treatment interruption. The models are implemented in the probabilistic programming language Stan, and formulated in a Bayesian framework. In particular, we implemented our multiple-reactivation model, which is a refinement of a model for viral rebound developed by Pinkevych *et al.* and Hill *et al.*
+
+In addition to the Stan models, we provide Jupyter notebooks that guide the user through the process of the parsing of the data, compiling and running the Stan models, extracting estimates from the resulting chain and making figures of these results. The notebooks can also be used for a more theoretical analysis of the mutliple-reactivation model. A number of functions to simulate viral rebound trajectories is bundled in the included python module `mrmpytools`. This simulator can also be used for sensitivity analyses, which we demonstrate in one of the notebooks. The repository contains a data set from SIV infected macaques that we used to test our model.
+
+
+## Dependencies
 
 Make sure the following python packages are installed
 
@@ -20,6 +25,12 @@ Make sure the following python packages are installed
 - `scipy`
 - `numpy`
 - `matplotlib`
+
+Which can be installed with e.g.
+
+```bash
+$ pip install pystan
+```
 
 For using the notebooks, Jupyter is required. 
 Installation instructions can be found [here](https://jupyter.org/).
