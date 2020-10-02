@@ -1,8 +1,8 @@
 # Multiple-reactivation model
 
-This repository contains jupyter notebooks, Stan models and data used in our preprint
+This repository contains jupyter notebooks, Stan models and data used in our PLOS Computational Biology paper
 
-> [van Dorp *et al.*](https://www.biorxiv.org/content/10.1101/2020.07.28.221226v1), Models of SIV rebound after treatment interruption that involve multiple reactivation events, bioRxiv preprint (2020)
+> [van Dorp CH *et al.*](https://doi.org/10.1371/journal.pcbi.1008241) (2020) Models of SIV rebound after treatment interruption that involve multiple reactivation events. PLoS Comput Biol 16(10): e1008241.
 
 To use the code, simply clone the repository
 
